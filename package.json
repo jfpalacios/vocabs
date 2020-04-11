@@ -1,0 +1,27 @@
+{
+  "name": "vocabs",
+  "version": "0.0.1",
+  "description": "Learn vocabs from your terminal throughout your day",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "John Palacios",
+  "license": "MIT",
+  "dependencies": {
+    "article-parser": "^4.1.1",
+    "axios": "^0.19.2",
+    "chalk": "^4.0.0",
+    "commander": "^5.0.0",
+    "figlet": "^1.3.0",
+    "glob": "^7.1.6",
+    "inquirer": "^7.1.0",
+    "prettier": "^2.0.4",
+    "rss-parser": "^3.7.6",
+    "sequelize": "^5.21.6",
+    "shelljs": "^0.8.3",
+    "sqlite3": "^4.1.1",
+    "xml2js": "^0.4.23"
+  }
+}
