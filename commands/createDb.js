@@ -26,15 +26,12 @@ async function populateWords() {
 
 function uniqueWords(lines, lang, file) {
   return lines.reduce(
-    (acc, curr) => {
-      const [word, definition] = curr.split(':');
+    (acc, word) => {
       if (!acc[1][word]) {
         acc[0].push({
           word,
-          definition,
           lang,
           level: path.basename(file).split('.')[0],
-          examples: []
         });
         acc[1][word] = true;
       }
@@ -54,3 +51,6 @@ async function getExistingWords(words, db) {
       .map(o => o.word)
   );
 }
+
+// synchronize();
+populateWords()

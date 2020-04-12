@@ -1,14 +1,15 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Word extends Model {}
+  class Word extends Model {
+  
+  }
   Word.init(
     {
       lang: DataTypes.STRING,
       word: { type: DataTypes.STRING, unique: true, index: true },
       definition: DataTypes.STRING,
       level: DataTypes.STRING,
-      examples: DataTypes.JSON
     },
     { sequelize, modelName: 'word' }
   );
