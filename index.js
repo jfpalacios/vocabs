@@ -9,6 +9,7 @@ const clear = require('clear');
 const ora = require('ora');
 const sample = require('lodash/sample');
 
+const initDb = require('./commands/initDb')
 const { getNextWord } = require('./query');
 const db = require('./db');
 
@@ -76,8 +77,12 @@ const confirmWord = async () => {
 };
 
 const run = async () => {
+  if (!isInstalled()) {
+    await initDb();
+  }
+
   let user = await db.user.findOne();
-  if (!user || !isInstalled()) {
+  if (!user) {
     const languages = await setup();
     user = await db.user.create({
       languages
