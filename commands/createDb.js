@@ -51,6 +51,10 @@ async function getExistingWords(words, db) {
       .map(o => o.word)
   );
 }
-
 // synchronize();
 populateWords()
+
+module.exports = {
+  synchronize,
+  populateWords
+}

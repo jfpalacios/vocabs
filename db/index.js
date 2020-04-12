@@ -7,7 +7,8 @@ var db = {};
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: `${__dirname}/../data/vocabs.db`
+  storage: `${__dirname}/../data/vocabs.db`,
+  logging: false
 });
 
 fs.readdirSync(__dirname)
@@ -19,6 +20,7 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
+db.learning.belongsTo(db.word, { foreignKey: 'word_id' })
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
