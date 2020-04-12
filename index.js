@@ -7,17 +7,14 @@ const shell = require('shelljs');
 const fs = require('fs');
 const clear = require('clear');
 const ora = require('ora');
+const sample = require('lodash/sample');
+
 const { getNextWord } = require('./query');
+const db = require('./db');
 
 const { Command } = require('commander');
 const program = new Command();
 program.version('0.0.1');
-
-const Freq = {
-  SOON: 'SOON',
-  LATER: 'LATER',
-  NEVER: 'NEVER'
-};
 
 const isInstalled = () => {
   if (!fs.existsSync(`${__dirname}/data/vocabs.db`)) {
@@ -38,7 +35,7 @@ const isInstalled = () => {
 };
 
 const setup = async () => {
-  const langs = { French: 'fra', Russian: 'rus' };
+  const langs = { French: 'fra' };
   const question = [
     {
       type: 'checkbox',
@@ -66,25 +63,40 @@ const selectFrequency = async () => {
   return actions[(await inquirer.prompt(question)).action];
 };
 
-const run = async () => {
-  if (!isInstalled()) {
-    const langs = await setup();
-  }
+const confirmWord = async () => {
+  const question = [
+    {
+      type: 'confirm',
+      name: 'action',
+      message: 'Do you still want to see this word?'
+    }
+  ];
 
-  presentWord();
+  return await inquirer.prompt(question);
 };
 
-const presentWord = async () => {
+const run = async () => {
+  let user = await db.user.findOne();
+  if (!user || !isInstalled()) {
+    const languages = await setup();
+    user = await db.user.create({
+      languages
+    });
+  }
+
+  presentWord(user.id, sample(user.languages));
+};
+
+const presentWord = async (userId, lang) => {
   clear();
   const now = new Date();
   const spinner = ora('Loading words...').start();
 
-  await getNextWord({ lang: 'fra' }).then(async word => {
+  await getNextWord({ lang: lang }).then(async word => {
     spinner.stop();
-    clear()
+    clear();
     const later = new Date();
-
-    let data = word.word.toJSON();
+    let data = word.toJSON().word;
     console.log();
     console.log(chalk.white.bold.bgBlack(data.word));
     console.log();
@@ -96,12 +108,12 @@ const presentWord = async () => {
         console.log();
       });
     });
-    const frequency = await selectFrequency();
-
-    if (frequency == Freq.SOON) {
-      console.log('soon');
-    } else if (frequency == Freq.LATER) {
-    } else if (frequency == Freq.NEVER) {
+    if (word.isNewWord()) {
+      const frequency = await selectFrequency();
+      word.markFrequency(frequency);
+    } else {
+      const shouldLearn = await confirmWord();
+      word.markFrequency(shouldLearn ? word.Freq.SOON : word.Freq.NEVER);
     }
   });
 };

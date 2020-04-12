@@ -14,15 +14,17 @@ async function addWordsToQueue(limit, lang = 'fra') {
     };
   }
   const words = await db.word.findAll(filters);
-  
-  if (!words.length) throw new Error('ran out of words!');
+
+  if (!words.length) throw new Error('ran out of words!!!');
 
   for (let i = 0; i < words.length; i++) {
     let word = words[i];
     let results = await getWordData(word.word, { from: lang, to: 'eng' });
+    if (results) {
+      word.results = results;
+      word.save();
+    }
 
-    word.results = results;
-    word.save();
     if (i < words.length - 1) sleep.sleep(3);
   }
 
@@ -30,34 +32,38 @@ async function addWordsToQueue(limit, lang = 'fra') {
     words.map(word => {
       return {
         word_id: word.id,
-        stage: 0,
-        should_review: !!word.results,
+        stage: -1,
+        active: !!word.results,
         due_date: new Date()
       };
     })
   );
 }
 
-async function getNextWord({ lang, prefetch = 2 } = {}) {
+async function getNextWord({ lang, prefetch = 2, examplesLength = 2 } = {}) {
   const words = await db.learning.findAll({
     where: {
-      should_review: true,
+      active: true,
       due_date: { [Op.lte]: date.format(new Date(), 'YYYY-MM-DD') }
     },
     include: [
       {
         model: db.word,
-        required: true
+        required: true,
+        where: { lang }
       }
     ]
   });
 
-  if (words.length < prefetch) {
-    await addWordsToQueue(prefetch - words.length, lang);
+  if (words.length && words.length < prefetch) {
+    addWordsToQueue(prefetch, lang);
+  } else if (!words.length) {
+    await addWordsToQueue(prefetch, lang);
     return await getNextWord({ lang, prefetch });
   }
 
-  return words[0];
+  words[0].word.results = words[0].word.results.slice(0, examplesLength)
+  return words[0]
 }
 
 module.exports = {

@@ -10,7 +10,7 @@ async function synchronize() {
 }
 
 async function populateWords() {
-  ['fr'].forEach(lang => {
+  ['fra'].forEach(lang => {
     const wordPath = `${__dirname}/../data/${lang}/words/*.txt`;
     glob(wordPath, null, async (err, files) => {
       for (let file of files) {
