@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         this.stage += 2;
       } else if (action == Learning.Freq.NEVER) {
         this.active = false;
+        this.save();
         return;
       }
       this.due_date = this.active ? date.addDays(new Date(), this.intervals[this.stage]) : null;

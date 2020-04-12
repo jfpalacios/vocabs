@@ -16,7 +16,7 @@ const translate = (word, { type, from, to }) => {
       }));
     })
     .catch(error => {
-      console.log(error);
+      console.log('You were banned from the api :( add a proxy')
       return false;
     });
 };
