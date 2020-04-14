@@ -40,7 +40,7 @@ async function addWordsToQueue(limit, lang = 'fra') {
   );
 }
 
-async function getNextWord({ lang, prefetch = 1, examplesLength = 2 } = {}) {
+async function getNextWord({ lang, prefetch = 1 } = {}) {
   const words = await db.learning.findAll({
     where: {
       active: true,

@@ -28,7 +28,6 @@ module.exports = (sequelize, DataTypes) => {
     isNewWord() {
       return this.stage == -1;
     }
-
   }
   Learning.init(
     {

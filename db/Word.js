@@ -1,9 +1,7 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Word extends Model {
-
-  }
+  class Word extends Model {}
   Word.init(
     {
       lang: DataTypes.STRING,
