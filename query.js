@@ -54,7 +54,6 @@ async function getNextWord({ lang, prefetch = 1, examplesLength = 2 } = {}) {
       }
     ]
   });
-  
 
   if (words.length && words.length < prefetch) {
     addWordsToQueue(prefetch, lang);

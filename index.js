@@ -50,6 +50,16 @@ const setup = async () => {
   return (await inquirer.prompt(question)).langs.map(val => langs[val]);
 };
 
+const keypress = async () => {
+  process.stdin.setRawMode(true);
+  return new Promise(resolve =>
+    process.stdin.once('data', () => {
+      process.stdin.setRawMode(false);
+      resolve();
+    })
+  );
+};
+
 const selectFrequency = async () => {
   const actions = { Soon: 'SOON', Later: 'LATER', Never: 'NEVER' };
   const question = [
@@ -95,22 +105,22 @@ const run = async () => {
 const presentWord = async (userId, lang) => {
   clear();
   const now = new Date();
-  const spinner = ora('Loading words...').start();
-
+  console.log(chalk.white.bold.bgBlack('Loading Word...'));
   await getNextWord({ lang }).then(async word => {
-    spinner.stop();
     clear();
-
-    const later = new Date();
     let data = word.toJSON().word;
-    console.log();
+    if (!word.isNewWord()) {
+      console.log(chalk.white.bold.bgBlack(data.word));
+      console.log(chalk.grey.bgBlack('Press any key to view word...'));
+      await keypress();
+      clear();
+    }
+
     console.log(chalk.white.bold.bgBlack(data.word));
     data.results.translations
       .filter(t => t.match >= 10)
       .forEach(term => {
-        console.log(
-          chalk.white.bgBlack(term.term) + ': ' + chalk.green('■'.repeat(Math.floor(term.match / 10))) + ' '
-        );
+        console.log(chalk.white.bgBlack(term.term) + ': ' + chalk.green('■'.repeat(Math.floor(term.match / 10))) + ' ');
       });
     console.log('-----------------------------');
     data.results.examples.forEach(example => {
@@ -118,14 +128,14 @@ const presentWord = async (userId, lang) => {
       console.log(` ${chalk.green.bgBlack(example.from)}`);
       console.log(` ${chalk.gray.bgBlack(example.to)}`);
     });
-    console.log()
+    console.log();
 
     if (word.isNewWord()) {
       const frequency = await selectFrequency();
       word.markFrequency(frequency);
     } else {
       const shouldLearn = await confirmWord();
-      word.markFrequency(shouldLearn ? word.Freq.SOON : word.Freq.NEVER);
+      word.markFrequency(shouldLearn ? 0 : 2);
     }
   });
 };
