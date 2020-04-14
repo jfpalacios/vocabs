@@ -10,8 +10,8 @@ async function synchronize() {
 }
 
 async function populateWords() {
-  ['fra'].forEach(lang => {
-    const wordPath = `${__dirname}/../data/${lang}/words/*.txt`;
+  ['fr', 'ru'].forEach(lang => {
+    const wordPath = `${__dirname}/../data/${lang}/*.txt`;
     glob(wordPath, null, async (err, files) => {
       for (let file of files) {
         const lines = fs.readFileSync(file).toString().split('\n');

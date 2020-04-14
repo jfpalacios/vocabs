@@ -19,7 +19,7 @@ async function addWordsToQueue(limit, lang = 'fra') {
 
   for (let i = 0; i < words.length; i++) {
     let word = words[i];
-    let results = await getWordData(word.word, { from: lang, to: 'eng' });
+    let results = await getWordData(word.word, { src: lang, trg: 'en' });
     if (results) {
       word.results = results;
       word.save();
@@ -54,6 +54,7 @@ async function getNextWord({ lang, prefetch = 1, examplesLength = 2 } = {}) {
       }
     ]
   });
+  
 
   if (words.length && words.length < prefetch) {
     addWordsToQueue(prefetch, lang);
@@ -62,7 +63,6 @@ async function getNextWord({ lang, prefetch = 1, examplesLength = 2 } = {}) {
     return await getNextWord({ lang, prefetch });
   }
 
-  words[0].word.results = words[0].word.results.slice(0, examplesLength)
   return words[0]
 }
 

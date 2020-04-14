@@ -9,7 +9,7 @@ const clear = require('clear');
 const ora = require('ora');
 const sample = require('lodash/sample');
 
-const initDb = require('./commands/initDb')
+const initDb = require('./commands/initDb');
 const { getNextWord } = require('./query');
 const db = require('./db');
 
@@ -36,7 +36,7 @@ const isInstalled = () => {
 };
 
 const setup = async () => {
-  const langs = { French: 'fra' };
+  const langs = { French: 'fr', Russian: 'ru' };
   const question = [
     {
       type: 'checkbox',
@@ -97,22 +97,29 @@ const presentWord = async (userId, lang) => {
   const now = new Date();
   const spinner = ora('Loading words...').start();
 
-  await getNextWord({ lang: lang }).then(async word => {
+  await getNextWord({ lang }).then(async word => {
     spinner.stop();
     clear();
+
     const later = new Date();
     let data = word.toJSON().word;
     console.log();
     console.log(chalk.white.bold.bgBlack(data.word));
-    console.log();
-    data.results.forEach((result, index) => {
-      console.log(chalk.white.bgBlack(`------ Term ${index + 1}: ${result.term} (${result.type}) ------`));
-      result.examples.forEach(example => {
-        console.log(` ${chalk.green.bgBlack(example.from)}`);
-        console.log(` ${chalk.gray.bgBlack(example.to)}`);
-        console.log();
+    data.results.translations
+      .filter(t => t.match >= 10)
+      .forEach(term => {
+        console.log(
+          chalk.white.bgBlack(term.term) + ': ' + chalk.green('■'.repeat(Math.floor(term.match / 10))) + ' '
+        );
       });
+    console.log('-----------------------------');
+    data.results.examples.forEach(example => {
+      console.log();
+      console.log(` ${chalk.green.bgBlack(example.from)}`);
+      console.log(` ${chalk.gray.bgBlack(example.to)}`);
     });
+    console.log()
+
     if (word.isNewWord()) {
       const frequency = await selectFrequency();
       word.markFrequency(frequency);

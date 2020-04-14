@@ -1,22 +1,42 @@
-const linguee = require('linguee');
+const axios = require('axios');
 
-const translate = (word, { type, from, to }) => {
-  return linguee
-    .translate(word, { from, to })
+const translate = (word, { src, trg }) => {
+  const payload = {
+    source_text: word,
+    target_text: '',
+    source_lang: src,
+    target_lang: trg,
+    npage: 1,
+    mode: 0
+  };
+
+  return axios
+    .post('https://context.reverso.net/bst-query-service', payload)
     .then(res => {
-      if (res.words.length == 0) return false;
-      let possible = res.words[0].translations.filter(t => t.examples.length > 0).slice(0, 3);
+      const data = {
+        translations: res.data.dictionary_entry_list
+          .filter(entry => entry.isTranslation)
+          .map(entry => {
+            return {
+              match: (entry.frequency / res.data.nrows) * 100,
+              term: entry.term
+            };
+          })
+          .sort((a, b) => b.match - a.match)
+          .slice(0, 3),
+        examples: res.data.list.slice(0, 5).map(example => {
+          return {
+            from: example.s_text.replace(/<[^>]*>/g, ""),
+            to: example.t_text.replace(/<[^>]*>/g, "")
+          };
+        })
+      };
 
-      if (possible.length == 0) return false;
-
-      return possible.map(({ term, type, examples }) => ({
-        term,
-        type,
-        examples
-      }));
+      if (!data.translations.length || !data.examples.length) return false;
+      return data;
     })
     .catch(error => {
-      console.log('You were banned from the api :( add a proxy')
+      console.log(error);
       return false;
     });
 };
