@@ -6,7 +6,6 @@ const db = require(`${__dirname}/../db`);
 
 async function synchronize() {
   await db.sequelize.sync({ force: true });
-  console.log('All models were synchronized successfully.');
 }
 
 async function populateWords() {

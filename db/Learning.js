@@ -4,6 +4,7 @@ const date = require('date-and-time');
 module.exports = (sequelize, DataTypes) => {
   class Learning extends Model {
     static Freq = {
+      SOONER: 'SOONER',
       SOON: 'SOON',
       LATER: 'LATER',
       NEVER: 'NEVER'
@@ -13,7 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       this.intervals = [1, 1, 2, 3, 4, 5, 7, 9, 12, 15, 20, 25];
     }
     markFrequency(action) {
-      if (action == Learning.Freq.SOON) {
+      if (action == Learning.Freq.SOONER) {
+        this.stage = this.stage > 0 ? this.stage - 1 : 0;
+      } else if (action == Learning.Freq.SOON) {
         this.stage += 1;
       } else if (action == Learning.Freq.LATER) {
         this.stage += 2;
@@ -22,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
         this.save();
         return;
       }
+      this.stage = Math.min(this.stage, this.intervals.length - 1)
       this.due_date = this.active ? date.addDays(new Date(), this.intervals[this.stage]) : null;
       this.save()
     }

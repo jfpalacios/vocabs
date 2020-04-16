@@ -74,12 +74,15 @@ const selectFrequency = async () => {
   return actions[(await inquirer.prompt(question)).action];
 };
 
-const confirmWord = async () => {
+const updateFrequency = async () => {
+  const actions = { Sooner: 'SOONER', 'Planned Schedule': 'SOON', Later: 'LATER', Never: 'NEVER' };
   const question = [
     {
-      type: 'confirm',
+      type: 'list',
       name: 'action',
-      message: 'Do you still want to see this word?'
+      message: 'When do you want to see this word again?',
+      choices: Object.keys(actions),
+      default: 'Planned Schedule'
     }
   ];
 
@@ -102,6 +105,22 @@ const run = async () => {
   presentWord(user.id, sample(user.languages));
 };
 
+function displayWord(data) {
+  console.log(chalk.white.bold.bgBlack(data.word));
+  data.results.translations
+    .filter(t => t.match >= 10)
+    .forEach(term => {
+      console.log(chalk.white.bgBlack(term.term) + ': ' + chalk.green('■'.repeat(Math.floor(term.match / 10))) + ' ');
+    });
+  console.log('-----------------------------');
+  data.results.examples.forEach(example => {
+    console.log();
+    console.log(` ${chalk.green.bgBlack(example.from)}`);
+    console.log(` ${chalk.gray.bgBlack(example.to)}`);
+  });
+  console.log();
+}
+
 const presentWord = async (userId, lang) => {
   clear();
   const now = new Date();
@@ -116,26 +135,14 @@ const presentWord = async (userId, lang) => {
       clear();
     }
 
-    console.log(chalk.white.bold.bgBlack(data.word));
-    data.results.translations
-      .filter(t => t.match >= 10)
-      .forEach(term => {
-        console.log(chalk.white.bgBlack(term.term) + ': ' + chalk.green('■'.repeat(Math.floor(term.match / 10))) + ' ');
-      });
-    console.log('-----------------------------');
-    data.results.examples.forEach(example => {
-      console.log();
-      console.log(` ${chalk.green.bgBlack(example.from)}`);
-      console.log(` ${chalk.gray.bgBlack(example.to)}`);
-    });
-    console.log();
+    displayWord(data);
 
     if (word.isNewWord()) {
       const frequency = await selectFrequency();
       word.markFrequency(frequency);
     } else {
-      const shouldLearn = await confirmWord();
-      word.markFrequency(shouldLearn ? 0 : 2);
+      const frequency = await updateFrequency();
+      word.markFrequency(frequency);
     }
   });
 };
